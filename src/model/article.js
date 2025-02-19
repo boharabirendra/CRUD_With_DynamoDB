@@ -1,5 +1,6 @@
 import {
   ScanCommand,
+  QueryCommand,
   GetItemCommand,
   PutItemCommand,
   DeleteItemCommand,
@@ -70,3 +71,22 @@ export const updateArticleById = (articleId, updateData) => {
   const command = new UpdateItemCommand(params);
   return client.send(command);
 };
+
+export function getArticlesByUser(userId) {
+  const params = {
+    TableName: TABLE_NAME,
+    IndexName: "ArticlesByUserID",
+    KeyConditionExpression: "userID = :userId",
+    ExpressionAttributeValues: {
+      ":userId": { S: userId },
+    },
+  };
+
+  try {
+    const command = new QueryCommand(params);
+    return client.send(command);
+  } catch (error) {
+    console.error("Error fetching articles:", error);
+    return [];
+  }
+}

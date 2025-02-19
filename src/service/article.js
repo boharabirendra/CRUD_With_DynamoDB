@@ -54,3 +54,13 @@ export const updateArticleById = async (articleId, updatedData) => {
     throw new Error("Could not update article in service layer");
   }
 };
+
+export const getArticlesByUser = async (userId) => {
+  try {
+    const { Items } = await ArticleModel.getArticlesByUser(userId);
+    return Items.map((item) => unmarshall(item));
+  } catch (error) {
+    console.error("Error in service layer - getArticlesByUser:", error);
+    throw new Error("Could not update article in service layer");
+  }
+};

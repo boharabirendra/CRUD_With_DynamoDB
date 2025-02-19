@@ -4,6 +4,9 @@ import * as ArticleController from "../controller/article.js";
 const router = express.Router();
 
 router.get("/", ArticleController.getAllArticles);
+
+router.get("/all/:userId", ArticleController.getArticlesByUser);
+
 router.get("/:id", ArticleController.getArticleById);
 
 router.delete("/:id", ArticleController.deleteArticle);

@@ -2,8 +2,14 @@ import { request, response } from "express";
 import * as ArticleService from "../service/article.js";
 
 export const createArticle = async (request, response) => {
-  const { articleId, author, title, content } = request.body;
-  await ArticleService.createArticle({ articleId, author, title, content });
+  const { articleId, userID, author, title, content } = request.body;
+  await ArticleService.createArticle({
+    title,
+    author,
+    userID,
+    content,
+    articleId,
+  });
   return response.send({ status: 200, message: "Article created" });
 };
 
@@ -45,5 +51,15 @@ export const updateArticleById = async (request, response) => {
     updatedArticle,
     status: 200,
     message: `Updated article with ID: ${articleId}`,
+  });
+};
+
+export const getArticlesByUser = async (request, response) => {
+  const userId = request.params.userId;
+  const articles = await ArticleService.getArticlesByUser(userId);
+  return response.send({
+    articles,
+    status: 200,
+    message: `Articles by user: ${userId}`,
   });
 };

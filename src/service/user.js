@@ -16,7 +16,7 @@ export const createUser = async (userData) => {
     return result;
   } catch (error) {
     console.error("Error in service layer - createUser:", error);
-    throw new Error("Could not create article in service layer");
+    throw new Error("Could not create user in service layer");
   }
 };
 
