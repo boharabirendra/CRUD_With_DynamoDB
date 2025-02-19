@@ -1,5 +1,6 @@
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
+import redis from "../redis/redis.js";
 import * as ArticleModel from "../model/article.js";
 
 export const getAllArticles = async () => {
@@ -14,9 +15,20 @@ export const getAllArticles = async () => {
 
 export const getArticleById = async (articleId) => {
   try {
+    const cacheKey = `article:${articleId}`;
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit: Returning articles from cache");
+      return JSON.parse(cachedData);
+    }
     const { Item } = await ArticleModel.getArticleById(articleId);
     if (!Item) return null;
-    return unmarshall(Item);
+
+    const article = unmarshall(Item);
+
+    await redis.setex(cacheKey, 3600, JSON.stringify(article));
+
+    return article;
   } catch (error) {
     console.error("Error in service layer - getArticleById:", error);
     throw new Error("Could not fetch article in service layer");
