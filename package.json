@@ -1,13 +1,18 @@
 {
   "type": "module",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "nodemon ./src/index.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.750.0",
+    "@aws-sdk/lib-dynamodb": "^3.751.0",
+    "@aws-sdk/util-dynamodb": "^3.751.0",
     "aws-sdk": "^2.1692.0",
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
   }
 }
