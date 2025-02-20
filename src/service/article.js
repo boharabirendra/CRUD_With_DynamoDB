@@ -69,13 +69,21 @@ export const deleteArticle = async (articleId) => {
     await ArticleModel.deleteArticle(articleId);
     await redis.del(`article:${articleId}`);
   } catch (error) {
-    console.error("Error in service layer - deleteArticle:", error);
-    throw new Error("Could not delete article in service layer");
+    if (error.name === "ConditionalCheckFailedException") {
+      throw new Error("Item does not exist.");
+    } else {
+      console.error("Error in service layer - deleteArticle:", error);
+      throw new Error("Could not delete article in service layer");
+    }
   }
 };
 
 export const updateArticleById = async (articleId, username, updatedData) => {
   try {
+    const article = await getArticleById(articleId);
+    if (!article) {
+      throw new Error(`Article with articleId: ${articleId} does not exists.`);
+    }
     const { Attributes } = await ArticleModel.updateArticleById(
       articleId,
       updatedData
@@ -85,9 +93,10 @@ export const updateArticleById = async (articleId, username, updatedData) => {
     return unmarshall(Attributes);
   } catch (error) {
     console.error("Error in service layer - updateArticleById:", error);
-    throw new Error("Could not update article in service layer");
+    throw new Error(error.message);
   }
 };
+
 export const getArticlesByUser = async (username) => {
   const cacheKey = `articles:user:${username}`;
 

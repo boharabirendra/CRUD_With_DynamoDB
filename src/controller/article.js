@@ -61,14 +61,20 @@ export const deleteArticle = async (request, response) => {
   try {
     const articleId = request.params.articleId;
     await ArticleService.deleteArticle(articleId);
-    response.send({
-      status: 200,
+
+    return response.status(200).json({
       message: `Deleted article with ID: ${articleId}`,
     });
   } catch (error) {
-    return response.send({
-      status: 404,
-      message: `Failed Deleting article with ID: ${articleId}`,
+    console.error("Error in deleteArticle controller:", error);
+
+    if (error.message === "Item does not exist.") {
+      return response.status(404).json({
+        message: `Article with ID: ${request.params.articleId} not found.`,
+      });
+    }
+    return response.status(500).json({
+      message: `Failed to delete article with ID: ${request.params.articleId}`,
     });
   }
 };
@@ -83,16 +89,14 @@ export const updateArticleById = async (request, response) => {
       username,
       updatedData
     );
-    return response.send({
+    return response.status(200).json({
       updatedArticle,
       status: 200,
       message: `Updated article with ID: ${articleId}`,
     });
   } catch (error) {
-    return response.send({
-      error,
-      status: 404,
-      message: `Failed Updating article with ID: ${articleId}`,
+    return response.status(404).json({
+      error: error.message,
     });
   }
 };

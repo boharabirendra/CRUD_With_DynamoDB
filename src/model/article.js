@@ -37,6 +37,7 @@ export const deleteArticle = (articleId) => {
   const command = new DeleteItemCommand({
     TableName: TABLE_NAME,
     Key: marshall({ articleId }),
+    ConditionExpression: "attribute_exists(articleId)",
   });
   return client.send(command);
 };

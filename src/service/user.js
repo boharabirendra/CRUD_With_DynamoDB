@@ -2,8 +2,8 @@ import { compare } from "bcryptjs";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 import * as UserModel from "../model/user.js";
+import { generateToken } from "../utils/jwtUtils.js";
 import { hashPassword } from "../utils/hashPassword.js";
-import { generateToken, verifyToken } from "../utils/jwtUtils.js";
 
 export const createUser = async (userData) => {
   try {
