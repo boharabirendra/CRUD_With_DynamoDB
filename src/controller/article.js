@@ -60,7 +60,8 @@ export const getAllArticles = async (request, response) => {
 export const deleteArticle = async (request, response) => {
   try {
     const articleId = request.params.articleId;
-    await ArticleService.deleteArticle(articleId);
+    const { username } = request.user;
+    await ArticleService.deleteArticle(articleId, username);
 
     return response.status(200).json({
       message: `Deleted article with ID: ${articleId}`,
@@ -68,13 +69,8 @@ export const deleteArticle = async (request, response) => {
   } catch (error) {
     console.error("Error in deleteArticle controller:", error);
 
-    if (error.message === "Item does not exist.") {
-      return response.status(404).json({
-        message: `Article with ID: ${request.params.articleId} not found.`,
-      });
-    }
     return response.status(500).json({
-      message: `Failed to delete article with ID: ${request.params.articleId}`,
+      error: error.message,
     });
   }
 };

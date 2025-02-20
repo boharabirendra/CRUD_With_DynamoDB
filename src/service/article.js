@@ -64,8 +64,12 @@ export const createArticle = async (articleData) => {
   }
 };
 
-export const deleteArticle = async (articleId) => {
+export const deleteArticle = async (articleId, username) => {
   try {
+    const article = await getArticleById(articleId);
+    if (!article || article.username !== username) {
+      throw new Error(`Article with articleId: ${articleId} does not exists.`);
+    }
     await ArticleModel.deleteArticle(articleId);
     await redis.del(`article:${articleId}`);
   } catch (error) {
@@ -73,7 +77,7 @@ export const deleteArticle = async (articleId) => {
       throw new Error("Item does not exist.");
     } else {
       console.error("Error in service layer - deleteArticle:", error);
-      throw new Error("Could not delete article in service layer");
+      throw new Error(error.message);
     }
   }
 };
@@ -81,7 +85,7 @@ export const deleteArticle = async (articleId) => {
 export const updateArticleById = async (articleId, username, updatedData) => {
   try {
     const article = await getArticleById(articleId);
-    if (!article) {
+    if (!article || article.username !== username) {
       throw new Error(`Article with articleId: ${articleId} does not exists.`);
     }
     const { Attributes } = await ArticleModel.updateArticleById(

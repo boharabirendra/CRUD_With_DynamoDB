@@ -1,45 +1,41 @@
-import Sinon from "sinon";
 import { expect } from "expect";
-import * as UserModel from "../model/user.js";
-import * as GenerateHashedPassword from "../utils/hashPassword.js";
-import * as UserService from "../service/user.js";
+
+// Mock the modules before importing them
+jest.mock("../model/user.js");
+jest.mock("../utils/hashPassword.js");
+
+let UserModel;
+let GenerateHashedPassword;
+let UserService;
 
 describe("UserService", () => {
+  beforeEach(async () => {
+    // Dynamically import modules after Jest has mocked them
+    UserModel = await import("../model/user.js");
+    GenerateHashedPassword = await import("../utils/hashPassword.js");
+    UserService = await import("../service/user.js");
+  });
+
   describe("createUser", () => {
-    let createUserModelStub;
-    let hashPasswordStub;
-
-    beforeEach(() => {
-      createUserModelStub = Sinon.stub(UserModel, "createUser");
-      hashPasswordStub = Sinon.stub(GenerateHashedPassword, "hashPassword");
-    });
-
-    afterEach(() => {
-      Sinon.restore();
-    });
-
     it("should successfully create a user with hashed password", async () => {
-      const mockUserData = {
-        username: "testuser",
-        password: "password123",
-      };
-
+      const mockUserData = { username: "testuser", password: "password123" };
       const mockHashedPassword = "hashedPassword123";
       const expectedCreatedUser = {
         ...mockUserData,
         password: mockHashedPassword,
       };
 
-      hashPasswordStub.resolves(mockHashedPassword);
-      createUserModelStub.resolves(expectedCreatedUser);
+      GenerateHashedPassword.hashPassword.mockResolvedValue(mockHashedPassword);
+      UserModel.createUser.mockResolvedValue(expectedCreatedUser);
 
       const result = await UserService.createUser(mockUserData);
 
+      // Assertions
       expect(result).toStrictEqual(expectedCreatedUser);
-      expect(hashPasswordStub.callCount).toBe(1);
-      expect(hashPasswordStub.getCall(0).args[0]).toBe(mockUserData.password);
-      expect(createUserModelStub.callCount).toBe(1);
-      expect(createUserModelStub.getCall(0).args[0]).toStrictEqual({
+      expect(GenerateHashedPassword.hashPassword).toHaveBeenCalledWith(
+        mockUserData.password
+      );
+      expect(UserModel.createUser).toHaveBeenCalledWith({
         ...mockUserData,
         password: mockHashedPassword,
       });
