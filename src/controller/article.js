@@ -77,8 +77,10 @@ export const updateArticleById = async (request, response) => {
   try {
     const articleId = request.params.articleId;
     const { updatedData } = request.body;
+    const { username } = request.user;
     const updatedArticle = await ArticleService.updateArticleById(
       articleId,
+      username,
       updatedData
     );
     return response.send({

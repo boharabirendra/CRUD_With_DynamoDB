@@ -4,9 +4,28 @@ import redis from "../redis/redis.js";
 import * as ArticleModel from "../model/article.js";
 
 export const getAllArticles = async () => {
+  const cacheKey = "all:articles";
+  try {
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit: Returning articles from cache");
+      return JSON.parse(cachedData);
+    }
+  } catch (error) {
+    console.error("Redis error (getAllArticles):", error);
+  }
+
   try {
     const { Items } = await ArticleModel.getAllArticles();
-    return Items.map((item) => unmarshall(item));
+    if (!Items || Items.length === 0) {
+      return [];
+    }
+
+    const articles = Items.map((item) => unmarshall(item));
+
+    await redis.set(cacheKey, JSON.stringify(articles), "EX", 3600);
+
+    return articles;
   } catch (error) {
     console.error("Error in service layer - getAllArticles:", error);
     throw new Error("Could not fetch articles in service layer");
@@ -26,7 +45,7 @@ export const getArticleById = async (articleId) => {
 
     const article = unmarshall(Item);
 
-    await redis.setex(cacheKey, 3600, JSON.stringify(article));
+    await redis.set(cacheKey, JSON.stringify(article), "EX", 3600);
 
     return article;
   } catch (error) {
@@ -48,31 +67,53 @@ export const createArticle = async (articleData) => {
 export const deleteArticle = async (articleId) => {
   try {
     await ArticleModel.deleteArticle(articleId);
+    await redis.del(`article:${articleId}`);
   } catch (error) {
     console.error("Error in service layer - deleteArticle:", error);
     throw new Error("Could not delete article in service layer");
   }
 };
 
-export const updateArticleById = async (articleId, updatedData) => {
+export const updateArticleById = async (articleId, username, updatedData) => {
   try {
     const { Attributes } = await ArticleModel.updateArticleById(
       articleId,
       updatedData
     );
+    await redis.del(`article:${articleId}`);
+    await redis.del(`articles:user:${username}`);
     return unmarshall(Attributes);
   } catch (error) {
     console.error("Error in service layer - updateArticleById:", error);
     throw new Error("Could not update article in service layer");
   }
 };
-
 export const getArticlesByUser = async (username) => {
+  const cacheKey = `articles:user:${username}`;
+
+  try {
+    const cachedData = await redis.get(cacheKey);
+    if (cachedData) {
+      console.log("Cache hit: Returning articles from cache");
+      return JSON.parse(cachedData);
+    }
+  } catch (error) {
+    console.error("Redis error (getArticlesByUser):", error);
+  }
+
   try {
     const { Items } = await ArticleModel.getArticlesByUser(username);
-    return Items.map((item) => unmarshall(item));
+    if (!Items || Items.length === 0) {
+      return [];
+    }
+
+    const articles = Items.map((item) => unmarshall(item));
+
+    await redis.set(cacheKey, JSON.stringify(articles), "EX", 3600);
+
+    return articles;
   } catch (error) {
     console.error("Error in service layer - getArticlesByUser:", error);
-    throw new Error("Could not update article in service layer");
+    throw new Error("Could not fetch articles in service layer");
   }
 };
