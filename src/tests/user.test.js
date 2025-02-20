@@ -1,44 +1,44 @@
+import Sinon from "sinon";
 import { expect } from "expect";
 
-// Mock the modules before importing them
-jest.mock("../model/user.js");
-jest.mock("../utils/hashPassword.js");
+import * as UserModel from "../model/user.js";
+import * as UserService from "../service/user.js";
+import * as GenerateHashedPassword from "../utils/hashPassword.js";
 
-let UserModel;
-let GenerateHashedPassword;
-let UserService;
+describe("Create User", () => {
+  const user = {
+    username: "cat",
+    password: "encryptedPassword",
+  };
+  let userModelCreateUserStub;
+  let passwordGenerateHashedPasswordStub;
 
-describe("UserService", () => {
-  beforeEach(async () => {
-    // Dynamically import modules after Jest has mocked them
-    UserModel = await import("../model/user.js");
-    GenerateHashedPassword = await import("../utils/hashPassword.js");
-    UserService = await import("../service/user.js");
+  beforeEach(() => {
+    userModelCreateUserStub = Sinon.stub(UserModel, "createUser");
+    passwordGenerateHashedPasswordStub = Sinon.stub(
+      GenerateHashedPassword,
+      "hashPassword"
+    );
   });
 
-  describe("createUser", () => {
-    it("should successfully create a user with hashed password", async () => {
-      const mockUserData = { username: "testuser", password: "password123" };
-      const mockHashedPassword = "hashedPassword123";
-      const expectedCreatedUser = {
-        ...mockUserData,
-        password: mockHashedPassword,
-      };
+  afterEach(() => {
+    Sinon.restore();
+  });
 
-      GenerateHashedPassword.hashPassword.mockResolvedValue(mockHashedPassword);
-      UserModel.createUser.mockResolvedValue(expectedCreatedUser);
-
-      const result = await UserService.createUser(mockUserData);
-
-      // Assertions
-      expect(result).toStrictEqual(expectedCreatedUser);
-      expect(GenerateHashedPassword.hashPassword).toHaveBeenCalledWith(
-        mockUserData.password
-      );
-      expect(UserModel.createUser).toHaveBeenCalledWith({
-        ...mockUserData,
-        password: mockHashedPassword,
-      });
-    });
+  it("Should create user", async () => {
+    passwordGenerateHashedPasswordStub.resolves("encryptedPassword");
+    userModelCreateUserStub.resolves(user);
+    await UserService.createUser(user);
+    expect(passwordGenerateHashedPasswordStub.callCount).toBe(1);
+    expect(passwordGenerateHashedPasswordStub.getCall(0).args).toStrictEqual([
+      user.password,
+    ]);
+    expect(userModelCreateUserStub.callCount).toBe(1);
+    expect(userModelCreateUserStub.getCall(0).args).toStrictEqual([
+      {
+        ...user,
+        password: "encryptedPassword",
+      },
+    ]);
   });
 });
