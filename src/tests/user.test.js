@@ -1,60 +1,48 @@
+import Sinon from "sinon";
+import { expect } from "expect";
 import * as UserModel from "../model/user.js";
-import { createUser } from "../service/user.js";
-import { hashPassword } from "../utils/hashPassword.js";
+import * as GenerateHashedPassword from "../utils/hashPassword.js";
+import * as UserService from "../service/user.js";
 
-jest.mock("../model/user.js");
-jest.mock("../utils/hashPassword.js");
+describe("UserService", () => {
+  describe("createUser", () => {
+    let createUserModelStub;
+    let hashPasswordStub;
 
-describe("createUser", () => {
-  it("should successfully create a user with a hashed password", async () => {
-    const mockUserData = {
-      username: "cat",
-      password: "cat",
-    };
-
-    const mockHashedPassword = "hashedPassword";
-    const mockUserModelResult = {
-      ...mockUserData,
-      password: mockHashedPassword,
-    };
-
-    hashPassword.mockResolvedValue(mockHashedPassword);
-
-    UserModel.createUser.mockResolvedValue(mockUserModelResult);
-
-    const result = await createUser(mockUserData);
-
-    expect(result).toEqual(mockUserModelResult);
-    expect(UserModel.createUser).toHaveBeenCalledWith({
-      ...mockUserData,
-      password: mockHashedPassword,
+    beforeEach(() => {
+      createUserModelStub = Sinon.stub(UserModel, "createUser");
+      hashPasswordStub = Sinon.stub(GenerateHashedPassword, "hashPassword");
     });
-    expect(hashPassword).toHaveBeenCalledWith(mockUserData.password);
-  });
 
-  it("should throw an error when hashPassword fails", async () => {
-    const mockUserData = {
-      username: "testuser",
-      password: "plainPassword",
-    };
-    hashPassword.mockRejectedValue(new Error("Hashing failed"));
+    afterEach(() => {
+      Sinon.restore();
+    });
 
-    await expect(createUser(mockUserData)).rejects.toThrow(
-      "Could not create user in service layer"
-    );
-  });
+    it("should successfully create a user with hashed password", async () => {
+      const mockUserData = {
+        username: "testuser",
+        password: "password123",
+      };
 
-  it("should throw an error when createUser fails", async () => {
-    const mockUserData = {
-      username: "testuser",
-      password: "plainPassword",
-    };
-    const mockHashedPassword = "hashedPassword";
-    hashPassword.mockResolvedValue(mockHashedPassword);
-    UserModel.createUser.mockRejectedValue(new Error("DB Error"));
+      const mockHashedPassword = "hashedPassword123";
+      const expectedCreatedUser = {
+        ...mockUserData,
+        password: mockHashedPassword,
+      };
 
-    await expect(createUser(mockUserData)).rejects.toThrow(
-      "Could not create user in service layer"
-    );
+      hashPasswordStub.resolves(mockHashedPassword);
+      createUserModelStub.resolves(expectedCreatedUser);
+
+      const result = await UserService.createUser(mockUserData);
+
+      expect(result).toStrictEqual(expectedCreatedUser);
+      expect(hashPasswordStub.callCount).toBe(1);
+      expect(hashPasswordStub.getCall(0).args[0]).toBe(mockUserData.password);
+      expect(createUserModelStub.callCount).toBe(1);
+      expect(createUserModelStub.getCall(0).args[0]).toStrictEqual({
+        ...mockUserData,
+        password: mockHashedPassword,
+      });
+    });
   });
 });

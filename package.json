@@ -2,7 +2,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon ./src/index.js",
-    "test": "jest"
+    "test": "mocha 'src/tests/**/*.test.js' --experimental-modules"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.750.0",
@@ -12,12 +12,14 @@
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.7",
+    "expect": "^29.7.0",
     "express": "^4.21.2",
     "ioredis": "^5.5.0",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
+    "chai": "^5.2.0",
+    "mocha": "^11.1.0",
     "nodemon": "^3.1.9",
     "sinon": "^19.0.2"
   }
