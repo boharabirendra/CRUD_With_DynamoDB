@@ -67,9 +67,9 @@ export const updateArticleById = async (articleId, updatedData) => {
   }
 };
 
-export const getArticlesByUser = async (userId) => {
+export const getArticlesByUser = async (username) => {
   try {
-    const { Items } = await ArticleModel.getArticlesByUser(userId);
+    const { Items } = await ArticleModel.getArticlesByUser(username);
     return Items.map((item) => unmarshall(item));
   } catch (error) {
     console.error("Error in service layer - getArticlesByUser:", error);

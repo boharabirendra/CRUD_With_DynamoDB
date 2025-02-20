@@ -72,13 +72,13 @@ export const updateArticleById = (articleId, updateData) => {
   return client.send(command);
 };
 
-export function getArticlesByUser(userId) {
+export function getArticlesByUser(username) {
   const params = {
     TableName: TABLE_NAME,
-    IndexName: "ArticlesByUserID",
-    KeyConditionExpression: "userID = :userId",
+    IndexName: "ArticlesByUsername",
+    KeyConditionExpression: "username = :username",
     ExpressionAttributeValues: {
-      ":userId": { S: userId },
+      ":username": { S: username },
     },
   };
 

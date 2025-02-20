@@ -7,7 +7,7 @@ export async function createTable() {
     KeySchema: [{ AttributeName: "articleId", KeyType: "HASH" }],
     AttributeDefinitions: [
       { AttributeName: "articleId", AttributeType: "S" },
-      { AttributeName: "userID", AttributeType: "S" },
+      { AttributeName: "username", AttributeType: "S" },
     ],
     ProvisionedThroughput: {
       ReadCapacityUnits: 1,
@@ -15,10 +15,10 @@ export async function createTable() {
     },
     GlobalSecondaryIndexes: [
       {
-        IndexName: "ArticlesByUserID",
+        IndexName: "ArticlesByUsername",
         KeySchema: [
           {
-            AttributeName: "userID",
+            AttributeName: "username",
             KeyType: "HASH",
           },
         ],

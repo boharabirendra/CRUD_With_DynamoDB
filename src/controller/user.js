@@ -1,9 +1,17 @@
 import * as UserService from "../service/user.js";
 
 export const createUser = async (request, response) => {
-  const { username, password } = request.body;
-  const user = await UserService.createUser({ username, password });
-  return response.send({ status: 200, message: "User created", user });
+  try {
+    const { username, password } = request.body;
+    const user = await UserService.createUser({ username, password });
+    return response.send({ status: 200, message: "User created", user });
+  } catch (error) {
+    return response.send({
+      error,
+      status: 500,
+      message: "Failed to create user",
+    });
+  }
 };
 
 export const login = async (request, response) => {
