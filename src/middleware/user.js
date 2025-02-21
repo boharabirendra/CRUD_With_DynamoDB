@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 dotenv.config();
 
 export function authenticate(req, res, next) {
-  const token = req.header("Authorization");
+  const token = req.cookies.accessToken;
   if (!token) {
     return res
       .status(401)
@@ -12,7 +12,7 @@ export function authenticate(req, res, next) {
   }
 
   try {
-    const verified = jwt.verify(token.split(" ")[1], process.env.JWT_SECRET);
+    const verified = jwt.verify(token, process.env.JWT_SECRET);
     req.user = verified;
     next();
   } catch (error) {

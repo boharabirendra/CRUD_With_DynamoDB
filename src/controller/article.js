@@ -49,10 +49,8 @@ export const getAllArticles = async (request, response) => {
       articles,
     });
   } catch (error) {
-    return response.send({
-      error,
-      status: 500,
-      message: "Failed to fetch all articles",
+    return response.status(500).json({
+      error: error.message,
     });
   }
 };
@@ -99,7 +97,7 @@ export const updateArticleById = async (request, response) => {
 
 export const getArticlesByUser = async (request, response) => {
   try {
-    const username = request.params.username;
+    const { username } = request.user;
     const articles = await ArticleService.getArticlesByUser(username);
     return response.send({
       articles,

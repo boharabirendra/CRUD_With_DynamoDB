@@ -71,7 +71,7 @@ export const deleteArticle = async (articleId, username) => {
       throw new Error(`Article with articleId: ${articleId} does not exists.`);
     }
     await ArticleModel.deleteArticle(articleId);
-    await redis.del(`article:${articleId}`);
+    await redis.del(`articles:user:${username}`);
   } catch (error) {
     if (error.name === "ConditionalCheckFailedException") {
       throw new Error("Item does not exist.");

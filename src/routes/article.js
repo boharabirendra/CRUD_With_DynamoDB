@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/", ArticleController.getAllArticles);
 
-router.get("/all/:username", authenticate, ArticleController.getArticlesByUser);
+router.get("/all", authenticate, ArticleController.getArticlesByUser);
 
 router.get("/:articleId", ArticleController.getArticleById);
 
